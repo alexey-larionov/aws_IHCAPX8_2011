@@ -1,0 +1,49 @@
+./s02_explore_vcf.sh
+Sun 28 Mar 07:25:23 UTC 2021
+
+bcftools 1.11
+Using htslib 1.11
+Copyright (C) 2020 Genome Research Ltd.
+License Expat: The MIT/Expat license
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+vcf: /home/share/data/s01_copy_vcf/IHCAPX8_dragen_joint.hard-filtered.vcf.gz
+data_folder: /home/share/data/s01_copy_vcf
+
+Indexing ...
+
+Variant counts:
+
+Number of samples: 3
+Number of SNPs:    6255182
+Number of INDELs:  1363927
+Number of MNPs:    0
+Number of others:  0
+Number of sites:   7597709
+
+Calculating bcfstats...
+
+Making bcfstats plots...
+
+Parsing bcftools stats output: /home/share/data/s01_copy_vcf/bcfstats/IHCAPX8_dragen_joint.hard-filtered.vchk
+Plotting graphs: python3 plot.py
+Creating PDF: pdflatex summary.tex >plot-vcfstats.log 2>&1
+Finished: /home/share/data/s01_copy_vcf/bcfstats/summary.pdf
+
+Extracting annotations ...
+
+--- FILTER ---
+
+7340086 PASS
+ 163036 DRAGENSnpHardQUAL
+  58619 DRAGENIndelHardQUAL
+  33331 DRAGENSnpHardQUAL;LowDepth
+   1392 DRAGENIndelHardQUAL;LowDepth
+   1245 LowDepth
+
+Making summary ...
+
+Done
+Sun 28 Mar 07:32:57 UTC 2021
+

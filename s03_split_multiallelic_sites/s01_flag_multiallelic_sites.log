@@ -1,0 +1,24 @@
+./s01_flag_multiallelic_sites.sh
+Sun 28 Mar 21:20:40 UTC 2021
+
+bcftools 1.11
+Using htslib 1.11
+Copyright (C) 2020 Genome Research Ltd.
+License Expat: The MIT/Expat license
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+source_vcf: /home/share/data/s02_keep_only_pf_variants/IHCAPX8_dragen_joint.hard-filtered.PF.vcf.gz
+multiallelic_vcf: /home/share/data/s03_split_multiallelic_sites/IHCAPX8_dragen_joint.hard-filtered.PF.MA.vcf.gz
+output_vcf: /home/share/data/s03_split_multiallelic_sites/IHCAPX8_dragen_joint.hard-filtered.PF.MA-flag.vcf.gz
+
+Selecting multiallelic sites ...
+
+Indexing ...
+
+Adding multiallelic flag ...
+
+Indexing ...
+
+Done
+Sun 28 Mar 21:26:07 UTC 2021

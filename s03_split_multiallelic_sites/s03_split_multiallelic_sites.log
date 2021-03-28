@@ -1,0 +1,20 @@
+./s03_split_multiallelic_sites.sh
+Sun 28 Mar 21:49:43 UTC 2021
+
+bcftools 1.11
+Using htslib 1.11
+Copyright (C) 2020 Genome Research Ltd.
+License Expat: The MIT/Expat license
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+source_vcf: /home/share/data/s03_split_multiallelic_sites/IHCAPX8_dragen_joint.hard-filtered.PF.MA-flag.vcf.gz
+output_vcf: /home/share/data/s03_split_multiallelic_sites/IHCAPX8_dragen_joint.hard-filtered.PF.MA-flag.MA-split.vcf.gz
+
+Splitting multiallelic sites ...
+Lines   total/split/realigned/skipped:	7340086/232439/0/0
+
+Indexing ...
+
+Done
+Sun 28 Mar 21:52:58 UTC 2021

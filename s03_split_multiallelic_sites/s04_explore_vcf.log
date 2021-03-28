@@ -1,0 +1,75 @@
+./s04_explore_vcf.sh
+Sun 28 Mar 22:26:26 UTC 2021
+
+bcftools 1.11
+Using htslib 1.11
+Copyright (C) 2020 Genome Research Ltd.
+License Expat: The MIT/Expat license
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+source_vcf: /home/share/data/s03_split_multiallelic_sites/IHCAPX8_dragen_joint.hard-filtered.PF.MA-flag.vcf.gz
+split_vcf: /home/share/data/s03_split_multiallelic_sites/IHCAPX8_dragen_joint.hard-filtered.PF.MA-flag.MA-split.vcf.gz
+data_folder: /home/share/data/s03_split_multiallelic_sites
+
+Variant counts in source VCF:
+
+Number of samples: 3
+Number of SNPs:    6058733
+Number of INDELs:  1302671
+Number of MNPs:    0
+Number of others:  0
+Number of sites:   7340086
+
+Variant counts in split VCF:
+
+[W::vcf_parse_format] Extreme FORMAT/AF value encountered at chr1:12866791
+Number of samples: 3
+Number of SNPs:    6065729
+Number of INDELs:  1568086
+Number of MNPs:    0
+Number of others:  0
+Number of sites:   7633815
+
+Calculating bcfstats in split VCF...
+[W::vcf_parse_format] Extreme FORMAT/AF value encountered at chr1:12866791
+
+Making bcfstats plots...
+
+Parsing bcftools stats output: /home/share/data/s03_split_multiallelic_sites/bcfstats/IHCAPX8_dragen_joint.hard-filtered.PF.MA-flag.MA-split.vchk
+Plotting graphs: python3 plot.py
+Creating PDF: pdflatex summary.tex >plot-vcfstats.log 2>&1
+Finished: /home/share/data/s03_split_multiallelic_sites/bcfstats/summary.pdf
+
+Extracting annotations from split VCF ...
+[W::vcf_parse_format] Extreme FORMAT/AF value encountered at chr1:12866791
+
+A bi-allelic site in split vcf
+
+chr12	128667912	.	A	G	126.49	PASS	AC=2;AF=0.333;AN=6;DP=71;FS=6.267;MQ=250;MQRankSum=4.375;QD=2.75;ReadPosRankSum=2.964;SOR=0.661	GT:AD:AF:DP:GQ:FT:F1R2:F2R1:PL:GP	0/0:26,0:0:23:60:PASS:.:.:0,60,937:.	0/1:6,12:0.667:18:46:PASS:3,7:3,5:85,0,46:50,0.0001038,48.573	0/1:17,11:0.393:28:46:PASS:9,9:8,2:82,0,50:47.186,0.00010484,53
+
+A multiallelic site in source vcf
+
+chr1	15274	.	A	G,T	133.96	PASS	AC=4,2;AF=0.667,0.333;AN=6;DP=37;FS=0;MQ=10.52;QD=3.62;SOR=0.746;MULTIALLELIC	GT:AD:AF:DP:GQ:FT:F1R2:F2R1:PL:GP	1/2:0,4,7:0.364,0.636:11:7:PASS:0,2,2:0,2,5:201,239,40,155,0,44:132.04,205.56,8.8324,121.04,0.85245,13.244	1/2:0,5,3:0.625,0.375:8:6:PASS:0,3,1:0,2,2:162,116,37,194,0,46:93.854,82.854,6.2997,160.38,1.3297,15.33	1/1:0,16,2:0.889,0.111:18:43:PASS:0,7,2:0,9,0:97,48,0,635,14,63:59.16,45.16,0.00024359,450,46.212,63.212
+
+A multiallelic site in split vcf
+
+chr1	15274	.	A	G	133.96	PASS	AC=4;AF=0.667;AN=6;DP=37;FS=0;MQ=10.52;QD=3.62;SOR=0.746;MULTIALLELIC	GT:AD:AF:DP:GQ:FT:F1R2:F2R1:PL:GP	1/0:0,4:0.364:11:7:PASS:0,2:0,2:201,239,40:132.04,205.56,8.8324	1/0:0,5:0.625:8:6:PASS:0,3:0,2:162,116,37:93.854,82.854,6.2997	1/1:0,16:0.889:18:43:PASS:0,7:0,9:97,48,0:59.16,45.16,0.00024359
+chr1	15274	.	A	T	133.96	PASS	AC=2;AF=0.333;AN=6;DP=37;FS=0;MQ=10.52;QD=3.62;SOR=0.746;MULTIALLELIC	GT:AD:AF:DP:GQ:FT:F1R2:F2R1:PL:GP	0/1:0,7:0.636:11:7:PASS:0,2:0,5:201,155,44:132.04,121.04,13.244	0/1:0,3:0.375:8:6:PASS:0,1:0,2:162,194,46:93.854,160.38,15.33	0/0:0,2:0.111:18:43:PASS:0,2:0,0:97,635,63:59.16,450,63.212
+
+A warning multiallelic site in source vcf
+
+chr1	12866791	.	CATTTATTT	C,CATTTATTTATTTATTT	11.45	PASS	AC=1,1;AF=0.25,0.25;AN=4;DP=8;FS=0;MQ=10.51;MQRankSum=0.804;QD=0.86;ReadPosRankSum=0.804;SOR=1.863;MULTIALLELIC	GT:AD:AF:DP:GQ:FT:F1R2:F2R1:PL:GP	0/1:1,1,0:0.5,0:2:8:PASS:0,0,0:1,1,0:14,0,6,19,9,28:11.844,0.8442,9.5384,51.833,44.293,63.512	./.:.:.:.:.:LowDepth:.:.:.:.	0/2:1,0,4:0,0.8:6:6:DRAGENIndelHardQUAL:1,0,3:0,0,1:7,75,78,0,13,6:7.152,109.87,115.87,3.152,50.902,11.721
+
+A warning multiallelic site in split vcf
+
+[W::vcf_parse_format] Extreme FORMAT/AF value encountered at chr1:12866791
+chr1	12866791	.	CATTTATTT	C	11.45	PASS	AC=1;AF=0.25;AN=4;DP=8;FS=0;MQ=10.51;MQRankSum=0.804;QD=0.86;ReadPosRankSum=0.804;SOR=1.863;MULTIALLELIC	GT:AD:AF:DP:GQ:FT:F1R2:F2R1:PL:GP	0/1:1,1:0.5:2:8:PASS:0,0:1,1:14,0,6:11.844,0.8442,9.5384	./.:.:.:.:.:LowDepth:.:.:.:.	0/0:1,0:0:6:6:DRAGENIndelHardQUAL:1,0:0,0:7,75,78:7.152,109.87,115.87
+chr1	12866791	.	CATTTATTT	CATTTATTTATTTATTT	11.45	PASS	AC=1;AF=0.25;AN=4;DP=8;FS=0;MQ=10.51;MQRankSum=0.804;QD=0.86;ReadPosRankSum=0.804;SOR=1.863;MULTIALLELIC	GT:AD:AF:DP:GQ:FT:F1R2:F2R1:PL:GP	0/0:1,0:0:2:8:PASS:0,0:1,0:14,19,28:11.844,51.833,63.512	./.:.:0:.:.:LowDepth:.:.:.:.	0/1:1,4:0.8:6:6:DRAGENIndelHardQUAL:1,3:0,1:7,0,6:7.152,3.152,11.721
+
+Making summary of split VCF ...
+
+[W::vcf_parse_format] Extreme FORMAT/AF value encountered at chr1:12866791
+Done
+Sun 28 Mar 22:31:02 UTC 2021
+

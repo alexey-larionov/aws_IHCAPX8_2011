@@ -1,0 +1,19 @@
+./s01_keep_only_pf_variants.sh
+Sun 28 Mar 07:53:50 UTC 2021
+
+bcftools 1.11
+Using htslib 1.11
+Copyright (C) 2020 Genome Research Ltd.
+License Expat: The MIT/Expat license
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+source_vcf: /home/share/data/s01_copy_vcf/IHCAPX8_dragen_joint.hard-filtered.vcf.gz
+output_vcf: /home/share/data/s02_keep_only_pf_variants/IHCAPX8_dragen_joint.hard-filtered.PF.vcf.gz
+
+Excluding variants that don't pass all filters ...
+
+Indexing ...
+
+Done
+Sun 28 Mar 07:57:10 UTC 2021
