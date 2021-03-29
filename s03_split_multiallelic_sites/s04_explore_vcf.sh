@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # s04_explore_vcf.sh
-# Alexey Larionov, 28Mar2021
+# Alexey Larionov, 29Mar2021
 
 # Intended use:
 # ./s04_explore_vcf.sh &> s04_explore_vcf.log
@@ -69,7 +69,7 @@ echo ""
 # Extract annotations
 
 echo "Extracting annotations from split VCF ..."
-bcftools query -H -f '%CHROM\t%POS\t%ID\t%REF\t%ALT\t%FILTER\t%QUAL\t%FORMAT\n' "${split_vcf}" > "${annotations}"
+bcftools query -H -f '%CHROM\t%POS\t%ID\t%REF\t%ALT\t%FILTER\t%QUAL\t%INFO\n' "${split_vcf}" > "${annotations}"
 echo ""
 
 # Look at specific examples

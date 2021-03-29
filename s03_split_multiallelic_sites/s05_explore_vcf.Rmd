@@ -1,0 +1,136 @@
+---
+title: "Explore VCF"
+author: "AL"
+date: "29/03/2021"
+output:
+  html_document:
+    toc: true
+    number_sections: true
+    toc_float: true
+editor_options:
+  chunk_output_type: console
+---
+
+# Summary
+
+- An interesting pattern in **Qual**: with some multimodality  
+- Some mitochondrial variants have no data in **Qual**  
+- Apparently, there is no * in **Alt**  
+- There is no **ID**-s and all variants **PASS**-ed filters  
+
+<style>
+pre{
+  overflow-x: auto;
+}
+pre code{
+  word-wrap: normal;
+  white-space: pre;
+}
+s</style>
+
+```{r echo=F}
+options(width=999)
+```
+
+# Start section
+
+```{r}
+
+Sys.time()
+rm(list=ls())
+graphics.off()
+gc()
+
+```
+
+# Read data
+
+reading may take some minutes in m4.large
+
+```{r}
+
+data_folder <- "/home/share/data/s03_split_multiallelic_sites"
+data_file <- "IHCAPX8_dragen_joint.hard-filtered.PF.MA-flag.MA-split.annotations.txt"
+data.df <- read.table(file.path(data_folder,data_file),
+                      header=F,sep="\t",quote="")
+
+head(data.df)
+#View(head(data.df))
+
+colnames(data.df) <- c("chr","pos","id","ref","alt","filter","qual","info")
+
+dim(data.df)
+str(data.df)
+
+rm(data_file)
+
+```
+
+# Qual
+
+```{r}
+
+x <- data.df$qual
+x <- as.numeric(x)
+sum(is.na(x))
+data.df$qual[is.na(x)]
+
+#View(data.df[is.na(x),])
+data.df[is.na(x),]
+
+data.df$qual <- as.numeric(data.df$qual)
+hist(data.df$qual, main="QUAL", xlab="qual")
+hist(data.df$qual[data.df$qual<600], main="QUAL (<600)", xlab="qual")
+quantile(data.df$qual, na.rm=T)
+
+rm(x)
+
+```
+
+# No star in ALt ?
+
+```{r}
+
+x <- grepl("\\*",data.df$alt)
+sum(x)
+rm(x)
+
+```
+
+# Multiallelic sites
+
+```{r}
+
+x <- grepl("MULTIALLELIC",data.df$info)
+sum(x)
+
+#View(head(data.df[x,]))
+head(data.df[x,])
+
+rm(x)
+
+```
+
+# Filter and Id
+
+```{r}
+table(data.df$id, useNA = "always")
+table(data.df$filter, useNA = "always")
+```
+
+# Save data
+
+```{r}
+
+save(data.df,file=file.path(data_folder,"IHCAPX8_dragen_joint.hard-filtered.PF.MA-flag.MA-split.annotations.RData"))
+
+```
+
+# Final section
+
+```{r}
+ls()
+gc()
+Sys.time()
+sessionInfo()
+```

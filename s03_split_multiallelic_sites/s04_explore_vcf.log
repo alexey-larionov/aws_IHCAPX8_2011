@@ -1,5 +1,5 @@
 ./s04_explore_vcf.sh
-Sun 28 Mar 22:26:26 UTC 2021
+Mon 29 Mar 13:34:25 UTC 2021
 
 bcftools 1.11
 Using htslib 1.11
@@ -42,7 +42,6 @@ Creating PDF: pdflatex summary.tex >plot-vcfstats.log 2>&1
 Finished: /home/share/data/s03_split_multiallelic_sites/bcfstats/summary.pdf
 
 Extracting annotations from split VCF ...
-[W::vcf_parse_format] Extreme FORMAT/AF value encountered at chr1:12866791
 
 A bi-allelic site in split vcf
 
@@ -68,8 +67,8 @@ chr1	12866791	.	CATTTATTT	C	11.45	PASS	AC=1;AF=0.25;AN=4;DP=8;FS=0;MQ=10.51;MQRa
 chr1	12866791	.	CATTTATTT	CATTTATTTATTTATTT	11.45	PASS	AC=1;AF=0.25;AN=4;DP=8;FS=0;MQ=10.51;MQRankSum=0.804;QD=0.86;ReadPosRankSum=0.804;SOR=1.863;MULTIALLELIC	GT:AD:AF:DP:GQ:FT:F1R2:F2R1:PL:GP	0/0:1,0:0:2:8:PASS:0,0:1,0:14,19,28:11.844,51.833,63.512	./.:.:0:.:.:LowDepth:.:.:.:.	0/1:1,4:0.8:6:6:DRAGENIndelHardQUAL:1,3:0,1:7,0,6:7.152,3.152,11.721
 
 Making summary of split VCF ...
-
 [W::vcf_parse_format] Extreme FORMAT/AF value encountered at chr1:12866791
+
 Done
-Sun 28 Mar 22:31:02 UTC 2021
+Mon 29 Mar 13:41:31 UTC 2021
 

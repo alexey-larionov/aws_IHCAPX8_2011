@@ -1,0 +1,20 @@
+./s01_add_ids.sh
+Mon 29 Mar 16:19:37 UTC 2021
+
+bcftools 1.11
+Using htslib 1.11
+Copyright (C) 2020 Genome Research Ltd.
+License Expat: The MIT/Expat license
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+source_vcf: /home/share/data/s03_split_multiallelic_sites/IHCAPX8_dragen_joint.hard-filtered.PF.MA-flag.MA-split.vcf.gz
+output_vcf: /home/share/data/s04_annotate/IHCAPX8_dragen_joint.hard-filtered.PF.MA-flag.MA-split.ID.vcf.gz
+
+Adding variant IDs ...
+[W::vcf_parse_format] Extreme FORMAT/AF value encountered at chr1:12866791
+
+Indexing ...
+
+Done
+Mon 29 Mar 16:21:57 UTC 2021
