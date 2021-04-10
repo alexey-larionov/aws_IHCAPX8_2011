@@ -1,0 +1,42 @@
+./s05_keep_only_standard_chromosomes.sh
+Tue 30 Mar 11:51:35 UTC 2021
+
+bcftools 1.11
+Using htslib 1.11
+Copyright (C) 2020 Genome Research Ltd.
+License Expat: The MIT/Expat license
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+source_vcf: /home/share/data/s04_annotate/IHCAPX8_dragen_joint.hard-filtered.PF.MA-flag.MA-split.ID.ClinVar.vcf.gz
+output_vcf: /home/share/data/s04_annotate/IHCAPX8_dragen_joint.hard-filtered.PF.MA-flag.MA-split.ID.ClinVar.std-Chr.vcf.gz
+
+Select variants ...
+
+Indexing ...
+
+Number of contigs in source vcf header:
+3366
+
+Number of contigs in output vcf header:
+3366
+
+Counts in source vcf:
+Number of samples: 3
+Number of SNPs:    6065729
+Number of INDELs:  1568086
+Number of MNPs:    0
+Number of others:  0
+Number of sites:   7633815
+
+Counts in output vcf:
+Number of samples: 3
+Number of SNPs:    5990520
+Number of INDELs:  1558095
+Number of MNPs:    0
+Number of others:  0
+Number of sites:   7548615
+
+Done
+Tue 30 Mar 11:55:39 UTC 2021
+
