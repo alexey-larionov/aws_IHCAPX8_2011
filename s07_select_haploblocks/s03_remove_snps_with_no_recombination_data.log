@@ -1,0 +1,16 @@
+./s03_remove_snps_with_no_recombination_data.sh
+Mon 12 Apr 14:20:30 UTC 2021
+
+Remove ~60k variants with no recombination data
+
+plink2: /home/share/tools/plink/2.0/plink_2.0-a2.3/plink2
+input_dataset: /home/share/data/s07_select_haploblocks/ihcapx8_autosomal_snps
+output_dataset: /home/share/data/s07_select_haploblocks/ihcapx8_for_ibis
+
+Getting ID-s of variants w/o recombination data ...
+52958 /home/share/data/s07_select_haploblocks/snps_to_remove.txt
+
+Removing variants ...
+
+Done
+Mon 12 Apr 14:20:34 UTC 2021

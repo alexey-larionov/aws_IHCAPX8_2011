@@ -1,0 +1,13 @@
+./s01_make_plink.sh
+Mon 12 Apr 14:14:43 UTC 2021
+
+Import VCF to PLINK (bed-bim-fam file-set)
+
+source_vcf: /home/share/data/s04_annotate/IHCAPX8_dragen_joint.hard-filtered.PF.MA-flag.MA-split.ID.ClinVar.std-Chr.Reheaded.VEP.split-VEP.vcf.gz
+plink_dataset: /home/share/data/s07_select_haploblocks/ihcapx8_autosomal_snps
+plink: /home/share/tools/plink/2.0/plink_2.0-a2.3/plink2
+
+Making plink dataset ...
+
+Done
+Mon 12 Apr 14:15:36 UTC 2021

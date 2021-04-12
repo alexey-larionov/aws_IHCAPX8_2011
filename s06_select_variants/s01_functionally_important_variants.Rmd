@@ -1,0 +1,467 @@
+---
+title: "Select functionally important variants"
+author: "Alexey Larionov"
+date: "11 Apr 2021"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+editor_options: 
+  chunk_output_type: console
+---
+
+# Summary
+
+Selects **358** potentially pathogenic variants:  
+
+- Rare  
+    + gnomAD AF < 0.01  
+- Known pathogenic variants in **ClinVar**  
+    + Pathogenic, Risk factor etc  
+    + Well supported and w/o conflicting interpretations  (121 -> **2**)
+    + Confidence level includes "criteria_provided,_single_submitter"  
+- Predicted **LoF**  
+    + HIGH impact by VEP  
+    + 928 -> 874 -> **229** (1 overlapping with ClinVar pathogenic)  
+- **Missense** SNP-s  
+    + SIFT & Poliphen & CADD  
+    + 829 -> 709 -> **116**  
+- **Inframe** INDEL-s  
+    + High CADD  
+    + 15 -> 12 -> **7**, none overlapping with 121  
+- **Regulatory**  
+   + TFBS in high inf. pos. with high CADD or  
+   + TFBS with score change > +/-0.2)  
+   + 71 -> 71 -> **9**, none overlapping with 121  
+- Exclude known **benign** in ClinVar  
+
+<style>
+pre{
+  overflow-x: auto;
+}
+pre code{
+  word-wrap: normal;
+  white-space: pre;
+}
+</style>
+
+```{r echo=F}
+options(width=999)
+```
+
+# Start section
+
+```{r}
+
+# Time
+Sys.time()
+
+# Memory
+gc()
+
+# Clean up
+rm(list=ls())
+graphics.off()
+
+# Options
+options(stringsAsFactors = F)
+
+# Working folders
+base_folder <- "/home/share"
+data_folder <- file.path(base_folder,"data","s06_select_variants")
+#dir.create(data_folder)
+scripts_folder <- file.path(base_folder,"scripts","s06_select_variants")
+setwd(scripts_folder)
+
+# Required libraries
+library(dplyr)
+
+```
+
+# Load data
+
+```{r}
+
+load(file.path(base_folder,"data","s05_read_to_R","s02_explore_and_update.RData"))
+base_folder <- "/home/share"
+data_folder <- file.path(base_folder,"data","s06_select_variants")
+scripts_folder <- file.path(base_folder,"scripts","s06_select_variants")
+
+```
+
+# Check data
+
+```{r}
+
+ls()
+
+dim(vcf_header.df)
+dim(variants.df)
+
+dim(dp.mx)
+dim(gq.mx)
+dim(gt.mx)
+dim(af.mx)
+dim(ad.mx)
+dim(gt_add.mx)
+dim(dp_gq_mask.mx)
+
+```
+
+# Rare
+
+```{r}
+
+rare <- variants.df$vep_MAX_AF < 0.01 | is.na(variants.df$vep_MAX_AF)
+sum(rare)
+
+```
+
+# ClinVar 
+
+Pathogenic, Risk factor  
+Well supported and w/o conflicting interpretations  
+
+## CLNSIG
+
+```{r}
+
+variants.df %>% 
+  group_by(CLNSIG) %>% 
+  summarise(counts=n()) %>% 
+  arrange(desc(counts)) %>% 
+  print(n=Inf)
+
+```
+
+## Suggestive pathogenic
+
+Include known pathogenic or functionally important
+
+```{r}
+
+suggestive_pathogenic_terms <- c(
+  "drug_response",
+  "association",
+  "risk_factor",
+  "Pathogenic",
+  "Affects",
+  "Pathogenic/Likely_pathogenic",
+  "Likely_pathogenic",
+  "association,_risk_factor",
+  "Affects,_risk_factor",
+  "drug_response,_risk_factor",
+  "Pathogenic,_risk_factor")
+
+suggestive_pathogenic <- variants.df$CLNSIG %in% suggestive_pathogenic_terms
+
+sum(suggestive_pathogenic)
+
+rm(suggestive_pathogenic_terms)
+
+```
+
+## Suggestive benign
+
+Include known benign or conflicting interpretations
+
+Note that **Uncertain_significance** is not considered evidence of being benign
+
+```{r}
+
+suggestive_benign_terms <- c(
+  "Benign",
+  "Likely_benign",
+  "Benign/Likely_benign",
+  "Conflicting_interpretations_of_pathogenicity",
+  "Conflicting_interpretations_of_pathogenicity,_other",
+  "protective,_risk_factor",
+  "Benign,_association",
+  "Benign,_other",
+  "Benign,_risk_factor",
+  "Likely_benign,_drug_response,_other",
+  "Benign,_drug_response",
+  "Conflicting_interpretations_of_pathogenicity,_Affects",
+  "Conflicting_interpretations_of_pathogenicity,_drug_response,_other",
+  "Conflicting_interpretations_of_pathogenicity,_other,_risk_factor",
+  "Conflicting_interpretations_of_pathogenicity,_protective",
+  "Conflicting_interpretations_of_pathogenicity,_risk_factor",
+  "Likely_benign,_other",
+  "Pathogenic,_protective")
+
+suggestive_benign <- variants.df$CLNSIG %in% suggestive_benign_terms
+
+sum(suggestive_benign)
+
+sum(suggestive_benign & suggestive_pathogenic) # common sense check
+
+rm(suggestive_benign_terms)
+
+```
+
+## CLNREVSTAT
+
+```{r}
+
+variants.df %>% 
+  group_by(CLNREVSTAT) %>% 
+  summarise(counts=n()) %>% 
+  arrange(desc(counts)) 
+
+sufficient_confidence_terms <- c(
+  "criteria_provided,_single_submitter",
+  "criteria_provided,_multiple_submitters,_no_conflicts",
+  "reviewed_by_expert_panel",
+  "practice_guideline")
+
+sufficient_confidence <- variants.df$CLNREVSTAT %in% sufficient_confidence_terms
+
+sum(sufficient_confidence)
+
+rm(sufficient_confidence_terms)
+
+```
+
+## Confident pathogenic / benign
+
+```{r}
+
+confident_pathogenic <- suggestive_pathogenic & sufficient_confidence
+sum(confident_pathogenic)
+sum(confident_pathogenic & rare)
+
+confident_benign <- suggestive_benign & sufficient_confidence
+sum(confident_benign)
+
+rm(suggestive_pathogenic, suggestive_benign, sufficient_confidence)
+
+```
+
+# Predicted LoF  
+
+Interestingly, HIGH impact by VEP adds very little to the known pathogenic, after exclusion of the known benign  
+
+https://m.ensembl.org/info/genome/variation/prediction/predicted_data.html  
+
+```{r}
+
+variants.df %>% 
+  group_by(vep_IMPACT) %>% 
+  summarise(counts=n()) %>% 
+  arrange(desc(counts))
+
+variants.df %>% 
+  filter(vep_IMPACT == "HIGH") %>% 
+  group_by(vep_Consequence) %>% 
+  summarise(counts=n()) %>% 
+  arrange(desc(counts)) %>% 
+  print(n=Inf)
+
+lof <- variants.df$vep_IMPACT == "HIGH"
+
+sum(lof)
+
+sum(lof & !confident_benign)
+
+sum(lof & !confident_benign & rare)
+
+sum(lof & !confident_benign & rare & confident_pathogenic)
+
+```
+
+# VEP consequences
+
+```{r}
+
+variants.df %>% 
+  group_by(vep_Consequence) %>% 
+  summarise(counts=n()) %>% 
+  arrange(desc(counts)) %>% 
+  print(n=Inf)
+
+```
+
+# Predicted high impact missenses  
+
+```{r}
+
+variants.df %>% 
+  filter(grepl("missense",vep_Consequence)) %>% 
+  group_by(vep_Consequence) %>% 
+  summarise(counts=n()) %>% 
+  arrange(desc(counts)) 
+
+variants.df %>% 
+  group_by(SIFT_call) %>% 
+  summarise(counts=n()) %>% 
+  arrange(desc(counts))
+
+variants.df %>% 
+  group_by(PolyPhen_call) %>% 
+  summarise(counts=n()) %>% 
+  arrange(desc(counts))
+
+hist(variants.df$vep_CADD_PHRED)
+abline(v=20, lty=2, col="red")
+sum(variants.df$vep_CADD_PHRED>=20,na.rm=T)
+
+predicted_important_missense <- grepl("missense",variants.df$vep_Consequence) &
+  variants.df$SIFT_call == "deleterious" & !is.na(variants.df$SIFT_call) &
+  variants.df$PolyPhen_call == "probably_damaging" & !is.na(variants.df$PolyPhen_call) &
+  variants.df$vep_CADD_PHRED >=20 & !is.na(variants.df$vep_CADD_PHRED)
+
+sum(predicted_important_missense)
+
+sum(predicted_important_missense & !confident_benign)
+
+sum(predicted_important_missense & !confident_benign & rare)
+
+sum(predicted_important_missense & !confident_benign & rare & confident_pathogenic)
+
+```
+
+# Inframe INDEL-s with high CADD  
+
+```{r}
+
+variants.df %>% 
+  filter(grepl("inframe",vep_Consequence)) %>% 
+  group_by(vep_Consequence) %>% 
+  summarise(counts=n()) %>% 
+  arrange(desc(counts)) %>% 
+  print(n=Inf)
+
+high_cadd_inframe <- grepl("inframe",variants.df$vep_Consequence) &
+  variants.df$vep_CADD_PHRED >=20 & !is.na(variants.df$vep_CADD_PHRED)
+
+sum(high_cadd_inframe)
+
+sum(high_cadd_inframe & !confident_benign)
+
+sum(high_cadd_inframe & !confident_benign & rare)
+
+sum(high_cadd_inframe & !confident_benign & rare & confident_pathogenic)
+
+```
+
+# Regulatory  
+
+https://www.biostars.org/p/150557/ 
+
+```{r}
+
+variants.df %>% 
+  filter(grepl("TF",vep_Consequence)) %>% 
+  group_by(vep_Consequence) %>% 
+  summarise(counts=n()) %>% 
+  arrange(desc(counts)) %>% 
+  print(n=Inf)
+
+table(variants.df$vep_HIGH_INF_POS, useNA = "always")
+hist(variants.df$vep_MOTIF_SCORE_CHANGE, lab=T, ylim=c(0,1e4))
+
+quantile(variants.df$vep_MOTIF_SCORE_CHANGE, na.rm=T)
+
+hist(variants.df$vep_MOTIF_SCORE_CHANGE[variants.df$vep_HIGH_INF_POS=="Y"], lab=T, ylim=c(0,3000))
+
+sum(grepl("TF",variants.df$vep_Consequence) &
+    (variants.df$vep_HIGH_INF_POS == "Y" & !is.na(variants.df$vep_HIGH_INF_POS) &
+    variants.df$vep_CADD_PHRED >=20 & !is.na(variants.df$vep_CADD_PHRED)))
+sum(variants.df$vep_MOTIF_SCORE_CHANGE < -0.2, na.rm = T)
+sum(variants.df$vep_MOTIF_SCORE_CHANGE > 0.2, na.rm = T)
+
+predicted_important_tfbs <- grepl("TF",variants.df$vep_Consequence) &
+    (variants.df$vep_HIGH_INF_POS == "Y" & !is.na(variants.df$vep_HIGH_INF_POS) &
+    variants.df$vep_CADD_PHRED >=20 & !is.na(variants.df$vep_CADD_PHRED)) | 
+    (variants.df$vep_MOTIF_SCORE_CHANGE < -0.2 & !is.na(variants.df$vep_MOTIF_SCORE_CHANGE)) |
+    (variants.df$vep_MOTIF_SCORE_CHANGE > 0.2 & !is.na(variants.df$vep_MOTIF_SCORE_CHANGE))
+
+variants.df$vep_MOTIF_SCORE_CHANGE[predicted_important_tfbs]
+
+sum(predicted_important_tfbs)
+
+sum(predicted_important_tfbs & !confident_benign)
+
+sum(predicted_important_tfbs & !confident_benign & rare)
+
+sum(predicted_important_tfbs & !confident_benign & rare & confident_pathogenic)
+
+```
+
+# Combine criteria
+
+```{r}
+
+combined_pathogenic <- confident_pathogenic | 
+  lof | 
+  predicted_important_missense | 
+  high_cadd_inframe | 
+  predicted_important_tfbs
+
+sum(combined_pathogenic)
+
+rare_pathogenic <- combined_pathogenic & rare
+
+sum(rare_pathogenic)
+
+selcted_pathogenic <- rare_pathogenic & !confident_benign
+
+sum(selcted_pathogenic)
+
+rm(combined_pathogenic,rare_pathogenic)
+
+```
+
+# Update variant.df
+
+```{r}
+
+variants.df <- data.frame(variants.df, 
+                          rare, 
+                          confident_pathogenic,
+                          confident_benign,
+                          lof,
+                          predicted_important_missense,
+                          high_cadd_inframe,
+                          predicted_important_tfbs,
+                          selcted_pathogenic)
+
+colnames(variants.df)
+
+rm(rare,confident_pathogenic,confident_benign,
+   lof,predicted_important_missense,high_cadd_inframe,
+   predicted_important_tfbs,selcted_pathogenic)
+
+```
+
+# Summarize and save
+
+```{r}
+
+ls()
+
+dim(vcf_header.df)
+dim(variants.df)
+
+dim(dp.mx)
+dim(gq.mx)
+dim(gt.mx)
+dim(af.mx)
+dim(ad.mx)
+dim(gt_add.mx)
+dim(dp_gq_mask.mx)
+
+save.image(file.path(data_folder,"s01_functionally_important_variants.RData"))
+
+```
+
+# Final section
+
+```{r}
+
+sessionInfo()
+Sys.time()
+gc()
+
+```

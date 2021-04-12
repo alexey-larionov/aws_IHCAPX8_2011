@@ -1,0 +1,40 @@
+# Rendering RMD outside of R-Studio
+# AL10Apr2021
+
+# This could be useful for rendering a very long RMD scripts
+# in screen instead of interactive rendering in R-Studio
+# to avoid the risk of interruption because of a broken connection.
+
+# Screen refresher
+#-----------------
+
+# - screen -ls
+# - screen -S vep
+# - ./s07_annotate_with_vep.sh &> s07_annotate_with_vep.log
+# - ctr-a d
+# - screen -r vep
+# - exit
+
+# In the screen
+#--------------
+
+# To make sure that the R-environment is the same as in R-Studio switch to r-user
+su - r-user # aws-2021
+
+# Just rendering with the command like this
+# Rscript -e "rmarkdown::render('test.Rmd')"
+# may fail if there is no pandoc in the path
+
+# The simplest way is to use the pandoc from the R-Studio installation
+# by adding it to the path, as advised here:
+# https://stackoverflow.com/questions/35077224/paths-in-ssh-versus-rstudio-server-for-pandoc-and-knitr
+
+PATH=/usr/lib/rstudio-server/bin/pandoc/:$PATH
+cd /test/script/folder
+Rscript -e "rmarkdown::render('test.Rmd')"
+# R -e "library('rmarkdown'); render('test.Rmd')"
+
+# An alternative approach could be to install pandoc system-wide
+# https://gist.github.com/backroot/3898b897a21987a5314051b6818411f3
+sudo amazon-linux-extras install epel
+sudo yum -y install pandoc --enablerepo=epel

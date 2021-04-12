@@ -1,0 +1,15 @@
+./s04_add_recombination_distances.sh
+Mon 12 Apr 14:22:16 UTC 2021
+
+Adding recombination distances
+
+plink_dataset: /home/share/data/s07_select_haploblocks/ihcapx8_for_ibis
+ibis_folder: /home/share/tools/ibis
+map_folder: /home/share/resources/recombination_maps/b38/recomb-hg38
+
+Updating bim ...
+Reading map file /home/share/resources/recombination_maps/b38/recomb-hg38/genetic_map_GRCh38_merged_no_chrX.tab... done
+Processing bim/map file /home/share/data/s07_select_haploblocks/ihcapx8_for_ibis.bim... done
+
+Done
+Mon 12 Apr 14:22:47 UTC 2021

@@ -1,0 +1,349 @@
+---
+title: "Explore and update"
+author: "Alexey Larionov"
+date: "11 Apr 2021"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+editor_options: 
+  chunk_output_type: console
+---
+
+# Summary
+
+- Explore *variants.df*, make CHROM ordered factor  
+- Calculate additive genotypes  
+- Make **DP**<10 and **GQ**<20 mask: **T** for pass, **F** for Fail  
+- Recode "." in variants to NA  
+- Convert total gnomAD, CADD & Motifs to numeric  
+
+Omit AF masks and missed data in dp/gq for now  
+
+Requires instance with 60GB RAM (e.g. r5.2xlarge)  
+
+<style>
+pre{
+  overflow-x: auto;
+}
+pre code{
+  word-wrap: normal;
+  white-space: pre;
+}
+</style>
+
+```{r echo=F}
+options(width=999)
+```
+
+# Start section
+
+```{r}
+
+# Time
+Sys.time()
+
+# Memory
+gc()
+
+# Clean up
+rm(list=ls())
+graphics.off()
+
+# Options
+options(stringsAsFactors = F)
+
+# Working folders
+base_folder <- "/home/share"
+data_folder <- file.path(base_folder,"data","s05_read_to_R")
+scripts_folder <- file.path(base_folder,"scripts","s05_read_to_R")
+setwd(scripts_folder)
+
+# Required libraries
+library(dplyr)
+
+```
+
+# Load data
+
+```{r}
+
+load(file.path(data_folder,"s01_import_vcf_to_R.RData"))
+base_folder <- "/home/share"
+data_folder <- file.path(base_folder,"data","s05_read_to_R")
+scripts_folder <- file.path(base_folder,"scripts","s05_read_to_R")
+
+```
+
+# Check data
+
+```{r}
+
+ls()
+
+dim(vcf_header.df)
+dim(variants.df)
+
+dim(dp.mx)
+dim(gq.mx)
+dim(gt.mx)
+dim(ad.mx)
+dim(af.mx)
+
+```
+
+# Explore and update variants
+
+## VCF header and variant.df
+
+```{r}
+
+table(vcf_header.df$Tag, useNA = "always")
+ncol(variants.df)
+
+sum(colnames(variants.df) %in% vcf_header.df$ID)
+
+colnames(variants.df)[! colnames(variants.df) %in% vcf_header.df$ID]
+
+```
+
+## Filter
+
+```{r}
+
+variants.df %>% 
+  group_by(FILTER) %>% 
+  summarise(counts=n()) %>% 
+  arrange(desc(counts))
+
+```
+
+## QUAL
+
+```{r}
+
+quantile(variants.df$QUAL)
+hist(variants.df$QUAL)
+hist(variants.df$QUAL[variants.df$QUAL<500])
+hist(log10(variants.df$QUAL))
+
+```
+
+## Chromosomes
+
+Update CHROM in variants.df: make them ordered
+
+```{r}
+
+chromosomes_order <- c("chr1","chr2","chr3","chr4","chr5","chr6","chr7","chr8","chr9","chr10",
+                       "chr11","chr12","chr13","chr14","chr15","chr16","chr17","chr18","chr19","chr20",
+                       "chr21","chr22","chrX","chrY","chrM")
+
+variants.df$CHROM <- ordered(variants.df$CHROM, chromosomes_order)
+
+summary(variants.df$CHROM)
+
+barplot(summary(variants.df$CHROM),las=2)
+
+rm(chromosomes_order)
+
+```
+
+## Recode dots to missed  
+
+```{r}
+
+sum(is.na(variants.df))
+sum(variants.df=="", na.rm=T)
+sum(variants.df==".", na.rm=T)
+
+NA -> variants.df[variants.df=="."]
+
+sum(is.na(variants.df))
+
+183406414 + 352243142 == 535649556
+
+```
+
+## Split SIFT & PolyPhen 
+
+```{r}
+
+# Check SIFT & PolyPhen
+variants.df$vep_SIFT[variants.df$vep_SIFT != "."][1:5]
+variants.df$vep_PolyPhen[variants.df$vep_PolyPhen != "."][1:5]
+
+# Split SIFT
+variants.df <- 
+  variants.df %>% 
+  mutate(SIFT_call=sub("\\(.*\\)","",vep_SIFT)) %>% 
+  mutate(SIFT_score=as.numeric(
+    sub(".*\\(","", sub("\\)","",vep_SIFT)))) %>% 
+  select(-vep_SIFT)
+
+# Split PolyPhen
+variants.df <- 
+  variants.df %>% 
+  mutate(PolyPhen_call=sub("\\(.*\\)","",vep_PolyPhen)) %>% 
+  mutate(PolyPhen_score=as.numeric(
+    sub(".*\\(","", sub("\\)","",vep_PolyPhen)))) %>% 
+  select(-vep_PolyPhen)
+
+# Check resukt
+variants.df %>% 
+  group_by(SIFT_call) %>% 
+  summarise(counts=n()) %>% 
+  arrange(desc(counts))
+
+variants.df %>% 
+  group_by(PolyPhen_call) %>% 
+  summarise(counts=n()) %>% 
+  arrange(desc(counts))
+
+```
+
+## gnomAD, CADD & Motifs
+
+```{r}
+
+str(variants.df[,c("vep_MAX_AF","vep_gnomAD_AF","vep_CADD_PHRED","vep_CADD_RAW","vep_MOTIF_POS","vep_MOTIF_SCORE_CHANGE")])
+
+variants.df$vep_MAX_AF[!is.na(variants.df$vep_MAX_AF)][1:5]
+variants.df$vep_gnomAD_AF[!is.na(variants.df$vep_gnomAD_AF)][1:5]
+variants.df$vep_MOTIF_POS[!is.na(variants.df$vep_MOTIF_POS)][1:5]
+variants.df$vep_MOTIF_SCORE_CHANGE[!is.na(variants.df$vep_MOTIF_SCORE_CHANGE)][1:5]
+
+variants.df$vep_MAX_AF <- as.numeric(as.vector(variants.df$vep_MAX_AF))
+variants.df$vep_gnomAD_AF <- as.numeric(as.vector(variants.df$vep_gnomAD_AF))
+variants.df$vep_CADD_RAW <- as.numeric(as.vector(variants.df$vep_CADD_RAW))
+variants.df$vep_CADD_PHRED <- as.numeric(as.vector(variants.df$vep_CADD_PHRED))
+variants.df$vep_MOTIF_POS <- as.integer(as.vector(variants.df$vep_MOTIF_POS))
+variants.df$vep_MOTIF_SCORE_CHANGE <- as.numeric(as.vector(variants.df$vep_MOTIF_SCORE_CHANGE))
+
+str(variants.df[,c("vep_MAX_AF","vep_gnomAD_AF","vep_CADD_PHRED","vep_CADD_RAW","vep_MOTIF_POS","vep_MOTIF_SCORE_CHANGE")]) 
+
+variants.df$vep_MAX_AF[!is.na(variants.df$vep_MAX_AF)][1:5]
+variants.df$vep_gnomAD_AF[!is.na(variants.df$vep_gnomAD_AF)][1:5]
+variants.df$vep_MOTIF_POS[!is.na(variants.df$vep_MOTIF_POS)][1:5]
+variants.df$vep_MOTIF_SCORE_CHANGE[!is.na(variants.df$vep_MOTIF_SCORE_CHANGE)][1:5]
+
+table(variants.df$vep_HIGH_INF_POS)
+
+```
+
+# Additive genotypes
+
+```{r}
+
+gt.mx[107:112,]
+
+table(gt.mx, useNA = "always")
+
+gt_add.mx <- gt.mx
+
+0 -> gt_add.mx[ gt.mx == "0/0" ]
+0 -> gt_add.mx[ gt.mx == "0|0" ]
+0 -> gt_add.mx[ gt.mx == "0" ] # assuming hemizygous reference
+
+
+1 -> gt_add.mx[ gt.mx == "1/0" ]
+1 -> gt_add.mx[ gt.mx == "0/1" ]
+1 -> gt_add.mx[ gt.mx == "1|0" ]
+1 -> gt_add.mx[ gt.mx == "0|1" ]
+
+2 -> gt_add.mx[ gt.mx == "1/1" ]
+2 -> gt_add.mx[ gt.mx == "1|1" ]
+2 -> gt_add.mx[ gt.mx == "1" ] # assuming hemizygous alternative
+
+table(gt_add.mx, useNA = "always")
+
+gt_add.mx[107:112,]
+
+gt_add.mx <- matrix(as.numeric(gt_add.mx),nrow=nrow(gt_add.mx))
+colnames(gt.mx) -> colnames(gt_add.mx)
+rownames(gt.mx) -> rownames(gt_add.mx)
+
+dim(gt_add.mx)
+
+gt_add.mx[107:112,]
+
+```
+
+# DP & GQ
+
+For now ignore missed data in GQ and DP
+
+## Genotypes mask
+
+```{r}
+
+dp_gq_mask.mx <- matrix(T,nrow=nrow(gt.mx),ncol=ncol(gt.mx))
+
+F -> dp_gq_mask.mx[gq.mx < 20]
+F -> dp_gq_mask.mx[dp.mx < 10]
+
+table(dp_gq_mask.mx, useNA = "always")
+
+sum(!dp_gq_mask.mx)/(nrow(dp_gq_mask.mx)*ncol(dp_gq_mask.mx))
+
+```
+
+## Variant filters
+
+```{r}
+
+passs_gq_filters_any <- apply(dp_gq_mask.mx, 1, any) 
+passs_gq_filters_all <- apply(dp_gq_mask.mx, 1, all) 
+
+table(passs_gq_filters_any, useNA = "always")
+table(passs_gq_filters_all, useNA = "always")
+
+sum(!passs_gq_filters_any)/length(passs_gq_filters_any)
+sum(!passs_gq_filters_all)/length(passs_gq_filters_all)
+
+passed_5 <- which(passs_gq_filters_all)[1:5]
+failed_5 <- which(!passs_gq_filters_any)[1:5]
+
+dp.mx[passed_5,]
+gq.mx[passed_5,]
+
+dp.mx[failed_5,]
+gq.mx[failed_5,]
+
+variants.df <- data.frame(variants.df,passs_gq_filters_any,passs_gq_filters_all)
+
+rm(passed_5,failed_5,passs_gq_filters_any,passs_gq_filters_all)
+
+```
+
+# Summarize and save
+
+```{r}
+
+ls()
+
+dim(vcf_header.df)
+dim(variants.df)
+
+dim(dp.mx)
+dim(gq.mx)
+dim(gt.mx)
+dim(af.mx)
+dim(ad.mx)
+dim(gt_add.mx)
+dim(dp_gq_mask.mx)
+
+save.image(file.path(data_folder,"s02_explore_and_update.RData"))
+
+```
+
+# Final section
+
+```{r}
+
+sessionInfo()
+Sys.time()
+gc()
+
+```

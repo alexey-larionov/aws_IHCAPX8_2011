@@ -1,0 +1,199 @@
+---
+title: "Select shared variants"
+author: "Alexey Larionov"
+date: "12 Apr 2021"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+editor_options: 
+  chunk_output_type: console
+---
+
+# Summary
+
+Select variants present in each of the affected family members  
+
+For now ignoring genotype masks and genotype-based variant filrters  
+
+<style>
+pre{
+  overflow-x: auto;
+}
+pre code{
+  word-wrap: normal;
+  white-space: pre;
+}
+</style>
+
+```{r echo=F}
+options(width=999)
+```
+
+# Start section
+
+```{r}
+
+# Time
+Sys.time()
+
+# Memory
+gc()
+
+# Clean up
+rm(list=ls())
+graphics.off()
+
+# Options
+options(stringsAsFactors = F)
+
+# Working folders
+base_folder <- "/home/share"
+data_folder <- file.path(base_folder,"data","s06_select_variants")
+scripts_folder <- file.path(base_folder,"scripts","s06_select_variants")
+setwd(scripts_folder)
+
+library(dplyr)
+
+```
+
+# Load data
+
+```{r}
+
+load(file.path(data_folder,"s01_functionally_important_variants.RData"))
+base_folder <- "/home/share"
+data_folder <- file.path(base_folder,"data","s06_select_variants")
+scripts_folder <- file.path(base_folder,"scripts","s06_select_variants")
+
+```
+
+# Check data
+
+```{r}
+
+ls()
+
+dim(vcf_header.df)
+dim(variants.df)
+
+dim(dp.mx)
+dim(gq.mx)
+dim(gt.mx)
+dim(af.mx)
+dim(ad.mx)
+dim(gt_add.mx)
+dim(dp_gq_mask.mx)
+
+```
+
+# Select shared variants
+
+```{r}
+
+shared.udf <- function(x){all(x>0)} # na.rm=T ??
+
+shared_in_affected <- apply(gt_add.mx,1,shared.udf)
+
+table(shared_in_affected, useNA = "always")
+
+variants.df <- data.frame(variants.df,shared_in_affected)
+
+rm(shared_in_affected, shared.udf)
+
+```
+
+# Pathogenic shared
+
+```{r}
+
+pathogenic_shared <- variants.df$selcted_pathogenic & 
+                     variants.df$shared_in_affected & !is.na(variants.df$shared_in_affected)
+
+sum(pathogenic_shared, na.rm=T)
+
+selected_annotations <- c("MULTIALLELIC","passs_gq_filters_any","passs_gq_filters_all",
+"rare","confident_pathogenic","confident_benign",
+"lof","predicted_important_missense","high_cadd_inframe",
+"predicted_important_tfbs","selcted_pathogenic","shared_in_affected")
+
+x <- variants.df[pathogenic_shared,selected_annotations]
+
+summary(x)
+
+selected_annotations <- c("CHROM","POS","REF","ALT","QUAL","DP","MULTIALLELIC",
+"vep_SYMBOL","vep_IMPACT","vep_Consequence","vep_BIOTYPE",
+"vep_MAX_AF","vep_MAX_AF_POPS",
+"SIFT_call","PolyPhen_call","vep_CADD_PHRED",
+"vep_MOTIF_NAME","vep_HIGH_INF_POS","vep_MOTIF_SCORE_CHANGE","vep_TRANSCRIPTION_FACTORS",
+"vep_Existing_variation","vep_HGVSc",
+"vep_CCDS","vep_cDNA_position","vep_Codons",
+"vep_Protein_position","vep_Amino_acids","vep_NEAREST","vep_DOMAINS",
+"passs_gq_filters_any","passs_gq_filters_all",
+"lof","predicted_important_missense","predicted_important_tfbs")
+
+x <- variants.df[pathogenic_shared,selected_annotations]
+
+x
+
+# FCGBP & PABPC3 are suspicious; MUC is always suspisious
+x %>% 
+  group_by(vep_SYMBOL) %>% 
+  summarise(counts=n()) %>% 
+  arrange(desc(counts)) %>% 
+  print(n=Inf)
+
+bad_genes <- c("FCGBP", "PABPC3")
+appropriate_genes <- ! x$vep_SYMBOL %in% bad_genes
+
+x %>% 
+  group_by(vep_BIOTYPE) %>% 
+  summarise(counts=n()) %>% 
+  arrange(desc(counts)) %>% 
+  print(n=Inf)
+
+appropriate_biotype_terms <- c("protein_coding", "lncRNA", "processed_transcript")
+appropriate_biotype <- x$vep_BIOTYPE %in% appropriate_biotype_terms | is.na(x$vep_BIOTYPE)
+
+y <- x[appropriate_genes & appropriate_biotype,]
+y
+
+z <- y[y$passs_gq_filters_all & y$vep_CADD_PHRED >=20,]
+z
+
+rm(pathogenic_shared,appropriate_genes,appropriate_biotype,selected_annotations,
+   bad_genes,appropriate_biotype_terms,x,y,z)
+
+```
+
+# Summarize and save
+
+```{r}
+
+ls()
+
+dim(vcf_header.df)
+dim(variants.df)
+
+dim(dp.mx)
+dim(gq.mx)
+dim(gt.mx)
+dim(af.mx)
+dim(ad.mx)
+dim(gt_add.mx)
+dim(dp_gq_mask.mx)
+
+save.image(file.path(data_folder,"s02_shared_variants.RData"))
+
+```
+
+# Final section
+
+```{r}
+
+sessionInfo()
+Sys.time()
+gc()
+
+```
